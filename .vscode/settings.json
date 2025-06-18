@@ -42,4 +42,6 @@
             "color": "gray"
         },
     ],
+    "makefile.configureOnOpen": false,
+    "editor.inlineSuggest.enabled": false,
 }
