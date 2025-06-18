@@ -16,8 +16,8 @@ MINIMUM_TEST_COVERAGE_PERCENT=0
 
 # install core and development Python dependencies into the currently activated venv
 function install {
-    python -m pip install --upgrade pip
-    python -m pip install --editable "$THIS_DIR/[dev]"
+    uv pip install --upgrade pip
+    uv pip install --editable "$THIS_DIR/[dev]"
 }
 
 # run linting, formatting, and other static code quality tools
