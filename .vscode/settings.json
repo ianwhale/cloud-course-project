@@ -6,7 +6,7 @@
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "editor.formatOnSave": true,
-    "python.defaultInterpreterPath": "${workspaceFolder}/venv/bin/python",
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
     "isort.args": [
         "--settings-path=${workspaceFolder}/pyproject.toml"
     ],
@@ -44,4 +44,5 @@
     ],
     "makefile.configureOnOpen": false,
     "editor.inlineSuggest.enabled": false,
+    "python.analysis.inlayHints.pytestParameters": true
 }
