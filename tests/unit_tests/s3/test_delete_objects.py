@@ -1,4 +1,4 @@
-import boto3
+"""Test delete module."""
 
 from files_api.s3.delete_objects import delete_s3_object
 from files_api.s3.read_objects import object_exists_in_s3
