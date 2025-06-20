@@ -44,5 +44,8 @@
     ],
     "makefile.configureOnOpen": false,
     "editor.inlineSuggest.enabled": false,
-    "python.analysis.inlayHints.pytestParameters": true
+    "python.analysis.inlayHints.pytestParameters": true,
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/src"
+    ]
 }
