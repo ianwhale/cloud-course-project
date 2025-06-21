@@ -4,7 +4,13 @@ import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 
-from src.files_api.main import APP
+from files_api.main import APP
+from files_api.s3.write_objects import upload_s3_object
+from tests.fixtures.mocked_aws import TEST_BUCKET_NAME
+
+TEST_FILE_PATH = "some/nested/file.txt"
+TEST_FILE_CONTENT = b"test"
+TEST_FILE_CONTENT_TYPE = "text/plain"
 
 
 # Fixture for FastAPI test client
@@ -15,41 +21,113 @@ def client(mocked_aws) -> TestClient:  # pylint: disable=unused-argument
 
 
 def test_upload_file(client: TestClient):
-    test_file_path = "some/nested/file.txt"
-    test_file_content = b"sdlfkjada"
-    test_file_content_type = "text/plain"
-
     response = client.put(
-        f"/files/{test_file_path}",
-        files={"file": (test_file_path, test_file_content, test_file_content_type)},
+        f"/files/{TEST_FILE_PATH}",
+        files={"file": (TEST_FILE_PATH, TEST_FILE_CONTENT, TEST_FILE_CONTENT_TYPE)},
     )
 
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json() == {
-        "file_path": test_file_path,
-        "message": f"New file uploaded at path: /{test_file_path}",
+        "file_path": TEST_FILE_PATH,
+        "message": f"New file uploaded at path: /{TEST_FILE_PATH}",
     }
 
     updated_content = b"new content"
     response = client.put(
-        f"/files/{test_file_path}",
-        files={"file": (test_file_path, updated_content, test_file_content_type)},
+        f"/files/{TEST_FILE_PATH}",
+        files={"file": (TEST_FILE_PATH, updated_content, TEST_FILE_CONTENT_TYPE)},
     )
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == {
-        "file_path": test_file_path,
-        "message": f"Existing file updated at path: /{test_file_path}",
+        "file_path": TEST_FILE_PATH,
+        "message": f"Existing file updated at path: /{TEST_FILE_PATH}",
     }
 
 
-def test_list_files_with_pagination(client: TestClient): ...
+def test_list_files_with_pagination(client: TestClient):
+    for i in range(1, 6):
+        upload_s3_object(
+            bucket_name=TEST_BUCKET_NAME,
+            object_key=f"file_{i}.txt",
+            file_content=b"blah_" + f"{i}".encode(),
+        )
+
+    # Get everything without pagination first.
+    response = client.get("/files?page_size=100")
+
+    assert response.status_code == status.HTTP_200_OK
+
+    response_json = response.json()
+    assert len(response_json["files"]) == 5
+    assert response_json["next_page_token"] is None
+    assert response_json["files"][0]["file_path"] == "file_1.txt"
+
+    # Get the first 2 files.
+    response = client.get("/files?page_size=2")
+
+    assert response.status_code == status.HTTP_200_OK
+
+    response_json = response.json()
+    assert len(response_json["files"]) == 2
+    assert isinstance(response_json["next_page_token"], str)
+    assert response_json["files"][-1]["file_path"] == "file_2.txt"
+
+    # Get the next 3 files.
+    response = client.get(
+        f"/files?page_size=3&page_token={response_json['next_page_token']}"
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+
+    response_json = response.json()
+    assert len(response_json["files"]) == 3
+    assert response_json["next_page_token"] is None
+    assert response_json["files"][-1]["file_path"] == "file_5.txt"
 
 
-def test_get_file_metadata(client: TestClient): ...
+def test_get_file_metadata(client: TestClient):
+    upload_s3_object(
+        bucket_name=TEST_BUCKET_NAME,
+        object_key=TEST_FILE_PATH,
+        file_content=TEST_FILE_CONTENT,
+        content_type=TEST_FILE_CONTENT_TYPE,
+    )
+
+    response = client.head(f"files/{TEST_FILE_PATH}")
+
+    assert response.status_code == status.HTTP_200_OK
+
+    headers = response.headers
+    assert headers["Content-Type"] == TEST_FILE_CONTENT_TYPE
+    assert headers["Content-Length"] == str(len(TEST_FILE_CONTENT))
+    assert "Last-Modified" in headers
 
 
-def test_get_file(client: TestClient): ...
+def test_get_file(client: TestClient):
+    upload_s3_object(
+        bucket_name=TEST_BUCKET_NAME,
+        object_key=TEST_FILE_PATH,
+        file_content=TEST_FILE_CONTENT,
+        content_type=TEST_FILE_CONTENT_TYPE,
+    )
+
+    response = client.get(f"files/{TEST_FILE_PATH}")
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.content == TEST_FILE_CONTENT
 
 
-def test_delete_file(client: TestClient): ...
+def test_delete_file(client: TestClient):
+    upload_s3_object(
+        bucket_name=TEST_BUCKET_NAME,
+        object_key=TEST_FILE_PATH,
+        file_content=TEST_FILE_CONTENT,
+        content_type=TEST_FILE_CONTENT_TYPE,
+    )
+
+    response = client.delete(f"/files/{TEST_FILE_PATH}")
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+
+    response = client.delete(f"/files/{TEST_FILE_PATH}")
+    assert response.status_code == status.HTTP_404_NOT_FOUND
