@@ -157,7 +157,9 @@ function help {
 }
 
 function run {
-    fastapi dev src/files_api/main.py
+    AWS_PROFILE=cloud-course \
+    S3_BUCKET_NAME="some-bucket" \
+    fastapi dev src.files_api.main:create_app
 }
 
 function run-mock {
@@ -171,6 +173,7 @@ function run-mock {
     export AWS_ENDPOINT_URL="http://localhost:5000"
     export AWS_SECRET_ACCESS_KEY="mock"
     export AWS_ACCESS_KEY_ID="mock"
+    export S3_BUCKET_NAME="some-bucket"
 
     # create a bucket called "some-bucket" using the mocked aws server
     aws s3 mb s3://some-bucket
@@ -179,7 +182,7 @@ function run-mock {
     trap 'kill $MOTO_PID' EXIT
 
     # Set AWS endpoint URL and start FastAPI app with uvicorn in the foreground
-    uvicorn src.files_api.main:APP --reload
+    uvicorn src.files_api.main:create_app --reload
 
     # Wait for the moto.server process to finish (this is optional if you want to keep it running)
     wait $MOTO_PID

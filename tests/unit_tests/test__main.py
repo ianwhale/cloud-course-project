@@ -4,9 +4,10 @@ import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 
-from files_api.main import APP
+from files_api.main import create_app
 from files_api.s3.write_objects import upload_s3_object
-from tests.fixtures.mocked_aws import TEST_BUCKET_NAME
+from files_api.settings import Settings
+from tests.consts import TEST_BUCKET_NAME
 
 TEST_FILE_PATH = "some/nested/file.txt"
 TEST_FILE_CONTENT = b"test"
@@ -15,8 +16,10 @@ TEST_FILE_CONTENT_TYPE = "text/plain"
 
 # Fixture for FastAPI test client
 @pytest.fixture
-def client(mocked_aws) -> TestClient:  # pylint: disable=unused-argument
-    with TestClient(APP) as client:
+def client(mocked_aws) -> TestClient:  # noqa
+    settings = Settings(s3_bucket_name=TEST_BUCKET_NAME)
+    app = create_app(settings)
+    with TestClient(app) as client:
         yield client
 
 

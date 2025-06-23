@@ -9,7 +9,7 @@ authors = [{ name = "<your name>", email = "some-email@gmail.com" }]
 readme = "README.md"
 requires-python = ">=3.8"
 license = { text = "MIT" }
-dependencies = ["boto3", "fastapi[standard]"]
+dependencies = ["boto3", "fastapi[standard]", "pydantic-settings"]
 classifiers = ["Programming Language :: Python :: 3"]
 keywords = ["one", "two"]
 
