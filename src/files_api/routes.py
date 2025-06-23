@@ -3,6 +3,7 @@
 from fastapi import (
     APIRouter,
     Depends,
+    HTTPException,
     Request,
     Response,
     UploadFile,
@@ -98,6 +99,14 @@ async def list_files(
     )
 
 
+def raise_if_file_not_found(bucket_name: str, file_path: str) -> None:
+    """Raise an HTTPException is the given file is not in the bucket."""
+    if not object_exists_in_s3(bucket_name=bucket_name, object_key=file_path):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="File not found."
+        )
+
+
 @ROUTER.head("/files/{file_path:path}")
 async def get_file_metadata(
     request: Request, file_path: str, response: Response
@@ -106,8 +115,12 @@ async def get_file_metadata(
 
     Note: by convention, HEAD requests MUST NOT return a body in the response.
     """
+    settings = request.app.state.settings
+
+    raise_if_file_not_found(bucket_name=settings.s3_bucket_name, file_path=file_path)
+
     get_object_response = fetch_s3_object(
-        bucket_name=request.app.state.settings.s3_bucket_name, object_key=file_path
+        bucket_name=settings.s3_bucket_name, object_key=file_path
     )
 
     response.headers["Content-Type"] = get_object_response["ContentType"]
@@ -123,8 +136,19 @@ async def get_file_metadata(
 @ROUTER.get("/files/{file_path:path}")
 async def get_file(request: Request, file_path: str) -> StreamingResponse:
     """Retrieve a file."""
+    # 1 - Business logic: Errors that the use can fix.
+    # Error case: object not in bucket
+    # Error case: invalid inputs
+
+    # 2 - Errors that the user cannot fix.
+    # Error case: not authenticated to AWS
+    # Error case: bucket does not exist
+    settings = request.app.state.settings
+
+    raise_if_file_not_found(settings.s3_bucket_name, file_path)
+
     response = fetch_s3_object(
-        bucket_name=request.app.state.settings.s3_bucket_name, object_key=file_path
+        bucket_name=settings.s3_bucket_name, object_key=file_path
     )
     return StreamingResponse(
         content=response["Body"], media_type=response["ContentType"]
@@ -140,13 +164,11 @@ async def delete_file(
     """Delete a file.
 
     NOTE: DELETE requests MUST NOT return a body in the response."""
-    s3_bucket_name = request.app.state.settings.s3_bucket_name
+    settings = request.app.state.settings
 
-    if not object_exists_in_s3(bucket_name=s3_bucket_name, object_key=file_path):
-        response.status_code = status.HTTP_404_NOT_FOUND
+    raise_if_file_not_found(settings.s3_bucket_name, file_path)
 
-    else:
-        delete_s3_object(bucket_name=s3_bucket_name, object_key=file_path)
-        response.status_code = status.HTTP_204_NO_CONTENT
+    delete_s3_object(bucket_name=settings.s3_bucket_name, object_key=file_path)
+    response.status_code = status.HTTP_204_NO_CONTENT
 
     return response

@@ -9,7 +9,7 @@ from files_api.settings import Settings
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
-    settings = settings or Settings()  # noqa
+    settings = settings or Settings()
 
     app = FastAPI()
     app.state.settings = settings

@@ -14,15 +14,6 @@ TEST_FILE_CONTENT = b"test"
 TEST_FILE_CONTENT_TYPE = "text/plain"
 
 
-# Fixture for FastAPI test client
-@pytest.fixture
-def client(mocked_aws) -> TestClient:  # noqa
-    settings = Settings(s3_bucket_name=TEST_BUCKET_NAME)
-    app = create_app(settings)
-    with TestClient(app) as client:
-        yield client
-
-
 def test_upload_file(client: TestClient):
     response = client.put(
         f"/files/{TEST_FILE_PATH}",
