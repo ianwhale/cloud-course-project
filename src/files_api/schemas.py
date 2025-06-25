@@ -6,7 +6,15 @@ from typing import (
     Optional,
 )
 
-from pydantic import BaseModel
+from pydantic import (
+    BaseModel,
+    Field,
+)
+
+DEFAULT_GET_FILES_PAGE_SIZE = 10
+DEFAULT_GET_FILES_MIN_PAGE_SIZE = 10
+DEFAULT_GET_FILES_MAX_PAGE_SIZE = 1000
+DEFAULT_GET_FILES_DIRECTORY = ""
 
 
 class FileMetadata(BaseModel):
@@ -21,8 +29,12 @@ class PutFileResponse(BaseModel):
 
 
 class GetFilesQueryParams(BaseModel):
-    page_size: int = 10
-    directory: Optional[str] = ""
+    page_size: int = Field(
+        DEFAULT_GET_FILES_PAGE_SIZE,
+        ge=DEFAULT_GET_FILES_MIN_PAGE_SIZE,
+        le=DEFAULT_GET_FILES_MAX_PAGE_SIZE,
+    )
+    directory: str = DEFAULT_GET_FILES_DIRECTORY
     page_token: Optional[str] = None
 
 

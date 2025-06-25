@@ -4,6 +4,7 @@ from fastapi import (
     APIRouter,
     Depends,
     HTTPException,
+    Path,
     Request,
     Response,
     UploadFile,
@@ -29,9 +30,20 @@ from files_api.schemas import (
 ROUTER = APIRouter()
 
 
+ValidFilePath = Path(
+    ...,
+    regex=r"^[^<>:\"|?*\x00-\x1f]+$",
+    description="Valid file path without invalid characters",
+    example="documents/example.txt",
+)
+
+
 @ROUTER.put("/files/{file_path:path}")
 async def upload_file(
-    request: Request, file_path: str, file: UploadFile, response: Response
+    request: Request,
+    file: UploadFile,
+    response: Response,
+    file_path: str = ValidFilePath,
 ) -> PutFileResponse:
     """Upload a file."""
     s3_bucket_name = request.app.state.settings.s3_bucket_name
@@ -109,7 +121,9 @@ def raise_if_file_not_found(bucket_name: str, file_path: str) -> None:
 
 @ROUTER.head("/files/{file_path:path}")
 async def get_file_metadata(
-    request: Request, file_path: str, response: Response
+    request: Request,
+    response: Response,
+    file_path: str = ValidFilePath,
 ) -> Response:
     """Retrieve file metadata.
 
@@ -134,10 +148,12 @@ async def get_file_metadata(
 
 
 @ROUTER.get("/files/{file_path:path}")
-async def get_file(request: Request, file_path: str) -> StreamingResponse:
+async def get_file(
+    request: Request,
+    file_path: str = ValidFilePath,
+) -> StreamingResponse:
     """Retrieve a file."""
     # 1 - Business logic: Errors that the use can fix.
-    # Error case: object not in bucket
     # Error case: invalid inputs
 
     # 2 - Errors that the user cannot fix.
@@ -158,8 +174,8 @@ async def get_file(request: Request, file_path: str) -> StreamingResponse:
 @ROUTER.delete("/files/{file_path:path}")
 async def delete_file(
     request: Request,
-    file_path: str,
     response: Response,
+    file_path: str = ValidFilePath,
 ) -> Response:
     """Delete a file.
 

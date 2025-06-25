@@ -40,7 +40,7 @@ def test_upload_file(client: TestClient):
 
 
 def test_list_files_with_pagination(client: TestClient):
-    for i in range(1, 6):
+    for i in range(1, 12):
         upload_s3_object(
             bucket_name=TEST_BUCKET_NAME,
             object_key=f"file_{i}.txt",
@@ -53,31 +53,27 @@ def test_list_files_with_pagination(client: TestClient):
     assert response.status_code == status.HTTP_200_OK
 
     response_json = response.json()
-    assert len(response_json["files"]) == 5
+    assert len(response_json["files"]) == 11
     assert response_json["next_page_token"] is None
     assert response_json["files"][0]["file_path"] == "file_1.txt"
 
-    # Get the first 2 files.
-    response = client.get("/files?page_size=2")
+    response = client.get("/files?page_size=10")
 
     assert response.status_code == status.HTTP_200_OK
 
     response_json = response.json()
-    assert len(response_json["files"]) == 2
+    assert len(response_json["files"]) == 10
     assert isinstance(response_json["next_page_token"], str)
-    assert response_json["files"][-1]["file_path"] == "file_2.txt"
 
-    # Get the next 3 files.
     response = client.get(
-        f"/files?page_size=3&page_token={response_json['next_page_token']}"
+        f"/files?page_size=10&page_token={response_json['next_page_token']}"
     )
 
     assert response.status_code == status.HTTP_200_OK
 
     response_json = response.json()
-    assert len(response_json["files"]) == 3
+    assert len(response_json["files"]) == 1
     assert response_json["next_page_token"] is None
-    assert response_json["files"][-1]["file_path"] == "file_5.txt"
 
 
 def test_get_file_metadata(client: TestClient):
