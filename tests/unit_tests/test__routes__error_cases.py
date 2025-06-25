@@ -1,8 +1,12 @@
+import boto3
 import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
+from httpx import delete
 
 from files_api.schemas import DEFAULT_GET_FILES_MAX_PAGE_SIZE
+from tests.consts import TEST_BUCKET_NAME
+from tests.utils import delete_s3_bucket
 
 INVALID_FILE_PATH = "files/file*.txt"
 
@@ -63,3 +67,31 @@ def test_put_file_invalid_filepath(client: TestClient, invalid_path: str):
         files={"file": ("test.txt", "test content", "text/plain")},
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+def test_get_files_page_token_is_mutually_exclusive_with_page_size_and_directory(
+    client: TestClient,
+):
+    response = client.get("/files?page_token=token&page_size=10")
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert "mutually exclusive" in str(response.json())
+
+    response = client.get("/files?page_token=token&directory=dir")
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert "mutually exclusive" in str(response.json())
+
+    response = client.get("/files?page_token=token&page_size=10&directory=dir")
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert "mutually exclusive" in str(response.json())
+
+    response = client.get("/files?page_token=token")
+    assert response.status_code != status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+def test_unforeseen_500_error(client: TestClient):
+    delete_s3_bucket(TEST_BUCKET_NAME)
+
+    response = client.get("/files")
+
+    assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+    assert response.json() == {"detail": "Internal server error"}

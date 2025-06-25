@@ -32,9 +32,9 @@ ROUTER = APIRouter()
 
 ValidFilePath = Path(
     ...,
-    regex=r"^[^<>:\"|?*\x00-\x1f]+$",
+    pattern=r"^[^<>:\"|?*\x00-\x1f]+$",
     description="Valid file path without invalid characters",
-    example="documents/example.txt",
+    examples=["documents/example.txt"],
 )
 
 

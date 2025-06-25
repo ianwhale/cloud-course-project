@@ -1,14 +1,17 @@
 """Schema definitions for responses / requests."""
 
 from datetime import datetime
+from multiprocessing import Value
 from typing import (
     List,
     Optional,
+    Self,
 )
 
 from pydantic import (
     BaseModel,
     Field,
+    model_validator,
 )
 
 DEFAULT_GET_FILES_PAGE_SIZE = 10
@@ -29,13 +32,28 @@ class PutFileResponse(BaseModel):
 
 
 class GetFilesQueryParams(BaseModel):
-    page_size: int = Field(
+    page_size: Optional[int] = Field(
         DEFAULT_GET_FILES_PAGE_SIZE,
         ge=DEFAULT_GET_FILES_MIN_PAGE_SIZE,
         le=DEFAULT_GET_FILES_MAX_PAGE_SIZE,
     )
-    directory: str = DEFAULT_GET_FILES_DIRECTORY
+    directory: Optional[str] = DEFAULT_GET_FILES_DIRECTORY
     page_token: Optional[str] = None
+
+    @model_validator(mode="after")
+    def check_page_token_only_argument_if_set(self) -> Self:
+        if self.page_token is not None:
+            get_files_query_params = self.model_dump(exclude_unset=True)
+
+            page_size_set = "page_size" in get_files_query_params.keys()
+            directory_set = "directory" in get_files_query_params.keys()
+
+            if page_size_set or directory_set:
+                raise ValueError(
+                    "page_token is mutually exclusive with page_size and directory"
+                )
+
+        return self
 
 
 class GetFilesResponse(BaseModel):

@@ -65,9 +65,7 @@ def test_list_files_with_pagination(client: TestClient):
     assert len(response_json["files"]) == 10
     assert isinstance(response_json["next_page_token"], str)
 
-    response = client.get(
-        f"/files?page_size=10&page_token={response_json['next_page_token']}"
-    )
+    response = client.get(f"/files?page_token={response_json['next_page_token']}")
 
     assert response.status_code == status.HTTP_200_OK
 
