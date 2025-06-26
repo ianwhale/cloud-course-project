@@ -1,7 +1,6 @@
 """Schema definitions for responses / requests."""
 
 from datetime import datetime
-from multiprocessing import Value
 from typing import (
     List,
     Optional,

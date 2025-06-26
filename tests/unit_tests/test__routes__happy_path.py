@@ -1,12 +1,9 @@
 """Test fastapi app."""
 
-import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 
-from files_api.main import create_app
 from files_api.s3.write_objects import upload_s3_object
-from files_api.settings import Settings
 from tests.consts import TEST_BUCKET_NAME
 
 TEST_FILE_PATH = "some/nested/file.txt"

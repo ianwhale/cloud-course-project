@@ -1,8 +1,6 @@
-import boto3
 import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
-from httpx import delete
 
 from files_api.schemas import DEFAULT_GET_FILES_MAX_PAGE_SIZE
 from tests.consts import TEST_BUCKET_NAME
