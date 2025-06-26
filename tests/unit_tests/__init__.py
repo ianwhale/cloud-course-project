@@ -1,7 +1,7 @@
 """
 Unit tests for cookiecutter.repo_name.
 
-This folder ideally has a parallel folder structure with the src/files_api/ folder.
+This folder ideally has a parallel folder structure with the src/v1/files_api/ folder.
 
 In general, unit tests
 
