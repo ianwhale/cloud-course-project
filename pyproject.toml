@@ -7,7 +7,7 @@ name = "cloud-course-project"
 description = "My package description"
 authors = [{ name = "<your name>", email = "some-email@gmail.com" }]
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.11"
 license = { text = "MIT" }
 dependencies = ["boto3", "fastapi[standard]", "pydantic-settings"]
 classifiers = ["Programming Language :: Python :: 3"]
