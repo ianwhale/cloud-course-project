@@ -38,7 +38,7 @@ ValidFilePath = Path(
 )
 
 
-@ROUTER.put("/v1/files/{file_path:path}")
+@ROUTER.put("/files/{file_path:path}")
 async def upload_file(
     request: Request,
     file: UploadFile,
@@ -74,7 +74,7 @@ async def upload_file(
     )
 
 
-@ROUTER.get("/v1/files")
+@ROUTER.get("/files")
 async def list_files(
     request: Request,
     query_params: GetFilesQueryParams = Depends(),
@@ -119,7 +119,7 @@ def raise_if_file_not_found(bucket_name: str, file_path: str) -> None:
         )
 
 
-@ROUTER.head("/v1/files/{file_path:path}")
+@ROUTER.head("/files/{file_path:path}")
 async def get_file_metadata(
     request: Request,
     response: Response,
@@ -147,7 +147,7 @@ async def get_file_metadata(
     return response
 
 
-@ROUTER.get("/v1/files/{file_path:path}")
+@ROUTER.get("/files/{file_path:path}")
 async def get_file(
     request: Request,
     file_path: str = ValidFilePath,
@@ -171,7 +171,7 @@ async def get_file(
     )
 
 
-@ROUTER.delete("/v1/files/{file_path:path}")
+@ROUTER.delete("/files/{file_path:path}")
 async def delete_file(
     request: Request,
     response: Response,
