@@ -1,3 +1,5 @@
+"""Script for generating openapi spec and diffing."""
+
 # pylint: disable=invalid-name
 
 import argparse

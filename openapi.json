@@ -309,7 +309,8 @@
           "last_modified",
           "size_bytes"
         ],
-        "title": "FileMetadata"
+        "title": "FileMetadata",
+        "description": "Represents a file in S3."
       },
       "GetFilesResponse": {
         "properties": {
@@ -337,7 +338,8 @@
           "files",
           "next_page_token"
         ],
-        "title": "GetFilesResponse"
+        "title": "GetFilesResponse",
+        "description": "Schema for the result of a get files query."
       },
       "HTTPValidationError": {
         "properties": {
@@ -368,7 +370,8 @@
           "file_path",
           "message"
         ],
-        "title": "PutFileResponse"
+        "title": "PutFileResponse",
+        "description": "Schema for the result of a file creation."
       },
       "ValidationError": {
         "properties": {

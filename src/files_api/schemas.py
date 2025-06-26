@@ -20,17 +20,23 @@ DEFAULT_GET_FILES_DIRECTORY = ""
 
 
 class FileMetadata(BaseModel):
+    """Represents a file in S3."""
+
     file_path: str
     last_modified: datetime
     size_bytes: int
 
 
 class PutFileResponse(BaseModel):
+    """Schema for the result of a file creation."""
+
     file_path: str
     message: str
 
 
 class GetFilesQueryParams(BaseModel):
+    """Schema for the input of a get files query."""
+
     page_size: Optional[int] = Field(
         DEFAULT_GET_FILES_PAGE_SIZE,
         ge=DEFAULT_GET_FILES_MIN_PAGE_SIZE,
@@ -56,5 +62,7 @@ class GetFilesQueryParams(BaseModel):
 
 
 class GetFilesResponse(BaseModel):
+    """Schema for the result of a get files query."""
+
     files: List[FileMetadata]
     next_page_token: Optional[str]

@@ -1,3 +1,5 @@
+"""Define app-wide settings for our API."""
+
 from pydantic import Field
 from pydantic_settings import (
     BaseSettings,

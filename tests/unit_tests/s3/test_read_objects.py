@@ -11,7 +11,7 @@ from files_api.s3.write_objects import upload_s3_object
 from tests.consts import TEST_BUCKET_NAME
 
 
-def test_object_exists_in_s3(mocked_aws: None):
+def test_object_exists_in_s3(mocked_aws: None):  # pylint: disable=unused-argument
     test_key = "key.txt"
 
     upload_s3_object(TEST_BUCKET_NAME, test_key, b"hello?")
@@ -20,7 +20,7 @@ def test_object_exists_in_s3(mocked_aws: None):
     assert not object_exists_in_s3(TEST_BUCKET_NAME, "nothing-here.txt")
 
 
-def test_pagination(mocked_aws: None):
+def test_pagination(mocked_aws: None):  # pylint: disable=unused-argument
     s3_client = boto3.client("s3")
     for i in range(1, 6):
         s3_client.put_object(
@@ -48,7 +48,7 @@ def test_pagination(mocked_aws: None):
     assert next_page_token is None
 
 
-def test_mixed_page_sizes(mocked_aws: None):
+def test_mixed_page_sizes(mocked_aws: None):  # pylint: disable=unused-argument
     s3_client = boto3.client("s3")
     for i in range(1, 6):
         s3_client.put_object(
@@ -76,7 +76,7 @@ def test_mixed_page_sizes(mocked_aws: None):
     assert next_page_token is None
 
 
-def test_directory_queries(mocked_aws: None):
+def test_directory_queries(mocked_aws: None):  # pylint: disable=unused-argument
     # Upload nested objects
     s3_client = boto3.client("s3")
     s3_client.put_object(

@@ -21,7 +21,7 @@ async def handle_broad_exceptions(request: Request, call_next):
 
 
 async def handle_pydantic_validation_errors(
-    request: Request, exc: pydantic.ValidationError
+    request: Request, exc: pydantic.ValidationError  # pylint: disable=unused-argument
 ):
     errors = exc.errors()
 

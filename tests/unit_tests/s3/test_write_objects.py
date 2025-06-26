@@ -8,7 +8,7 @@ from tests.consts import TEST_BUCKET_NAME
 
 
 @mock_aws
-def test_upload_s3_object(mocked_aws: None):
+def test_upload_s3_object(mocked_aws: None):  # pylint: disable=unused-argument
     object_key = "test.txt"
     file_content = b"Hello world"
     content_type = "text/plain"

@@ -125,7 +125,8 @@ async def get_file_metadata(
     response: Response,
     file_path: str = ValidFilePath,
 ) -> Response:
-    """Retrieve file metadata.
+    """
+    Retrieve file metadata.
 
     Note: by convention, HEAD requests MUST NOT return a body in the response.
     """

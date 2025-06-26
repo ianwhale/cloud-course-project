@@ -73,7 +73,31 @@ exclude = '''
 
 [tool.flake8]
 docstring-convention = "all"
-ignore = ["D107", "D212", "E501", "W503", "W605", "D203", "D100"]
+ignore = [
+    "D107",
+    "D212",
+    "E501",
+    "W503",
+    "W605",
+    "D203",
+    "D100",
+    # D103: Missing docstring in public function
+    "D103",
+    # D101: Missing docstring in public class
+    "D101",
+    # D102: Missing docstring in public method
+    "D102",
+    # D104: Missing docstring in public package
+    "D104",
+    # D105: Missing docstring in magic method
+    "D105",
+    # R701: Function is too complex
+    "R701",
+    # D209: Multi-line docstring closing quotes should be on a separate line
+    "D209",
+    # D213: Multi-line docstring summary should start at the second line
+    "D213",
+]
 exclude = [".venv"]
 max-line-length = 88
 

@@ -1,3 +1,5 @@
+"""Test error case handling in our routes."""
+
 import pytest
 from fastapi import status
 from fastapi.testclient import TestClient

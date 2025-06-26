@@ -1,3 +1,5 @@
+"""Define mocked AWS resources."""
+
 import os
 
 import boto3

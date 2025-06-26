@@ -1,11 +1,13 @@
+"""Define testing utility functions."""
+
 import boto3
 
 
 def delete_s3_bucket(bucket_name: str) -> None:
     """Delete bucket and all objects inside."""
-    s3 = boto3.resource("s3")
+    s3_client = boto3.resource("s3")
 
-    bucket = s3.Bucket(bucket_name)
+    bucket = s3_client.Bucket(bucket_name)
     bucket.objects.all().delete()
 
     bucket.delete()

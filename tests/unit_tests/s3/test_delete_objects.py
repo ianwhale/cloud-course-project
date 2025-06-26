@@ -6,7 +6,7 @@ from files_api.s3.write_objects import upload_s3_object
 from tests.consts import TEST_BUCKET_NAME
 
 
-def test_delete_existing_s3_object(mocked_aws: None):
+def test_delete_existing_s3_object(mocked_aws: None):  # pylint: disable=unused-argument
     test_key = "test.txt"
 
     upload_s3_object(TEST_BUCKET_NAME, test_key, b"test")
@@ -18,7 +18,9 @@ def test_delete_existing_s3_object(mocked_aws: None):
     assert not object_exists_in_s3(TEST_BUCKET_NAME, test_key)
 
 
-def test_delete_nonexistent_s3_object(mocked_aws: None):
+def test_delete_nonexistent_s3_object(
+    mocked_aws: None,
+):  # pylint: disable=unused-argument
     test_key = "test.txt"
 
     assert not object_exists_in_s3(TEST_BUCKET_NAME, test_key)
