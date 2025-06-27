@@ -15,7 +15,9 @@ TEST_FILE_CONTENT_TYPE = "text/plain"
 def test_upload_file(client: TestClient):
     response = client.put(
         f"/v1/files/{TEST_FILE_PATH}",
-        files={"file": (TEST_FILE_PATH, TEST_FILE_CONTENT, TEST_FILE_CONTENT_TYPE)},
+        files={
+            "file_content": (TEST_FILE_PATH, TEST_FILE_CONTENT, TEST_FILE_CONTENT_TYPE)
+        },
     )
 
     assert response.status_code == status.HTTP_201_CREATED
@@ -27,7 +29,9 @@ def test_upload_file(client: TestClient):
     updated_content = b"new content"
     response = client.put(
         f"/v1/files/{TEST_FILE_PATH}",
-        files={"file": (TEST_FILE_PATH, updated_content, TEST_FILE_CONTENT_TYPE)},
+        files={
+            "file_content": (TEST_FILE_PATH, updated_content, TEST_FILE_CONTENT_TYPE)
+        },
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -37,7 +41,7 @@ def test_upload_file(client: TestClient):
     }
 
 
-@pytest.mark.xfail
+@pytest.mark.xfail(reason="Currently a bug in pagination mutual exclusivity condition.")
 def test_list_files_with_pagination(client: TestClient):
     for i in range(1, 12):
         upload_s3_object(

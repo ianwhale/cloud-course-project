@@ -20,6 +20,14 @@ function install {
     uv pip install --editable "$THIS_DIR/[dev]"
 }
 
+function install-generated-sdk {
+    # setting editable_mode=strict fixes an issue with autocompletion
+    # in VS Code when installing editable packages. See:
+    # https://github.com/microsoft/pylance-release/issues/3473
+    uv pip install --editable "$THIS_DIR/files-api-sdk" \
+        --config-settings editable_mode=strict
+}
+
 # run linting, formatting, and other static code quality tools
 function lint {
     pre-commit run --all-files
@@ -187,6 +195,18 @@ function run-mock {
     # Wait for the moto.server process to finish (this is optional if you want to keep it running)
     wait $MOTO_PID
 }
+
+
+function generate-client-library {
+    docker run --rm \
+        --user "$(id -u):$(id -g)" \
+        -v ${PWD}:/local openapitools/openapi-generator-cli generate \
+        --generator-name python-pydantic-v1 \
+        --input-spec /local/openapi.json \
+        --output /local/files-api-sdk \
+        --package-name files_api_sdk
+}
+
 
 TIMEFORMAT="Task completed in %3lR"
 time ${@:-help}

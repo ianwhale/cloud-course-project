@@ -21,13 +21,14 @@ from files_api.s3.read_objects import (
 )
 from files_api.s3.write_objects import upload_s3_object
 from files_api.schemas import (
+    DEFAULT_GET_FILES_PAGE_SIZE,
     FileMetadata,
     GetFilesQueryParams,
     GetFilesResponse,
     PutFileResponse,
 )
 
-ROUTER = APIRouter()
+ROUTER = APIRouter(tags=["Files"])
 
 
 ValidFilePath = Path(
@@ -38,14 +39,39 @@ ValidFilePath = Path(
 )
 
 
-@ROUTER.put("/v1/files/{file_path:path}")
+@ROUTER.put(
+    "/v1/files/{file_path:path}",
+    responses={
+        status.HTTP_200_OK: {"model": PutFileResponse},
+        status.HTTP_201_CREATED: {"model": PutFileResponse},
+    },
+)
 async def upload_file(
     request: Request,
-    file: UploadFile,
+    file_content: UploadFile,
     response: Response,
     file_path: str = ValidFilePath,
 ) -> PutFileResponse:
-    """Upload a file."""
+    """
+    ## Upload a File
+    
+    Upload a file to the specified path. If a file already exists at the given path, 
+    it will be replaced with the new content.
+    
+    ### Parameters
+    - **file_path**: The destination path where the file should be stored
+    - **file_content**: The file content to upload (multipart/form-data)
+    
+    ### Response
+    - **200 OK**: File was successfully updated (file already existed)
+    - **201 Created**: File was successfully uploaded (new file created)
+    
+    ### Example
+    ```bash
+    curl -X PUT "https://api.example.com/v1/files/documents/report.pdf" \
+         -F "file=@local-file.pdf"
+    ```
+    """
     s3_bucket_name = request.app.state.settings.s3_bucket_name
 
     object_already_exists = object_exists_in_s3(
@@ -59,13 +85,13 @@ async def upload_file(
         response_message = f"New file uploaded at path: /{file_path}"
         response.status_code = status.HTTP_201_CREATED
 
-    file_content: bytes = await file.read()
+    file_content_bytes: bytes = await file_content.read()
 
     upload_s3_object(
         bucket_name=s3_bucket_name,
         object_key=file_path,
-        file_content=file_content,
-        content_type=file.content_type,
+        file_content=file_content_bytes,
+        content_type=file_content.content_type,
     )
 
     return PutFileResponse(
@@ -79,21 +105,50 @@ async def list_files(
     request: Request,
     query_params: GetFilesQueryParams = Depends(),
 ) -> GetFilesResponse:
-    """List files with pagination."""
+    """
+    ## List Files
+
+    Retrieve a paginated list of files stored in the system. Results can be filtered
+    by directory and support pagination for efficient browsing of large file collections.
+
+    ### Query Parameters
+    - **directory** (optional): Filter files by directory prefix
+    - **page_size** (optional): Number of files to return per page (default: 100)
+    - **page_token** (optional): Token for retrieving the next page of results
+
+    ### Response
+    Returns a list of files with metadata including:
+    - File path and name
+    - Last modified timestamp
+    - File size in bytes
+    - Next page token (if more results available)
+
+    ### Example
+    ```bash
+    # List all files
+    curl "https://api.example.com/v1/files"
+
+    # List files in a specific directory
+    curl "https://api.example.com/v1/files?directory=documents/"
+
+    # Get next page of results
+    curl "https://api.example.com/v1/files?page_token=abc123"
+    ```
+    """
     s3_bucket_name = request.app.state.settings.s3_bucket_name
 
     if query_params.page_token is None:
         objects, token = fetch_s3_objects_metadata(
             bucket_name=s3_bucket_name,
             prefix=query_params.directory,
-            max_keys=query_params.page_size,
+            max_keys=query_params.page_size or DEFAULT_GET_FILES_PAGE_SIZE,
         )
 
     else:
         objects, token = fetch_s3_objects_using_page_token(
             bucket_name=s3_bucket_name,
             continuation_token=query_params.page_token,
-            max_keys=query_params.page_size,
+            max_keys=query_params.page_size or DEFAULT_GET_FILES_PAGE_SIZE,
         )
 
     files = [
@@ -125,9 +180,30 @@ async def get_file_metadata(
     response: Response,
     file_path: str = ValidFilePath,
 ) -> Response:
-    """Retrieve file metadata.
+    """
+    ## Get File Metadata
 
-    Note: by convention, HEAD requests MUST NOT return a body in the response.
+    Retrieve metadata information about a file without downloading the file content.
+    This is useful for checking if a file exists and getting its properties.
+
+    ### Parameters
+    - **file_path**: The path to the file
+
+    ### Response Headers
+    - **Content-Type**: The MIME type of the file
+    - **Content-Length**: The size of the file in bytes
+    - **Last-Modified**: The last modification date of the file
+
+    ### Status Codes
+    - **200 OK**: File exists and metadata retrieved successfully
+    - **404 Not Found**: File does not exist
+
+    ### Example
+    ```bash
+    curl -I "https://api.example.com/v1/files/documents/report.pdf"
+    ```
+
+    Note: This endpoint returns only headers, no response body.
     """
     settings = request.app.state.settings
 
@@ -152,13 +228,33 @@ async def get_file(
     request: Request,
     file_path: str = ValidFilePath,
 ) -> StreamingResponse:
-    """Retrieve a file."""
-    # 1 - Business logic: Errors that the use can fix.
-    # Error case: invalid inputs
-
-    # 2 - Errors that the user cannot fix.
-    # Error case: not authenticated to AWS
-    # Error case: bucket does not exist
+    """
+    ## Download a File
+    
+    Download the content of a file stored at the specified path. The file is returned 
+    as a streaming response with the appropriate content type.
+    
+    ### Parameters
+    - **file_path**: The path to the file to download
+    
+    ### Response
+    - **200 OK**: File content streamed successfully
+    - **404 Not Found**: File does not exist
+    
+    ### Response Headers
+    - **Content-Type**: The MIME type of the file
+    - **Content-Length**: The size of the file in bytes
+    
+    ### Example
+    ```bash
+    # Download a file
+    curl "https://api.example.com/v1/files/documents/report.pdf" \
+         -o "downloaded-report.pdf"
+    
+    # Download and view text file content
+    curl "https://api.example.com/v1/files/logs/app.log"
+    ```
+    """
     settings = request.app.state.settings
 
     raise_if_file_not_found(settings.s3_bucket_name, file_path)
@@ -177,9 +273,25 @@ async def delete_file(
     response: Response,
     file_path: str = ValidFilePath,
 ) -> Response:
-    """Delete a file.
+    """
+    ## Delete a File
 
-    NOTE: DELETE requests MUST NOT return a body in the response."""
+    Permanently delete a file from the specified path. This operation cannot be undone.
+
+    ### Parameters
+    - **file_path**: The path to the file to delete
+
+    ### Response
+    - **204 No Content**: File deleted successfully
+    - **404 Not Found**: File does not exist
+
+    ### Example
+    ```bash
+    curl -X DELETE "https://api.example.com/v1/files/documents/old-report.pdf"
+    ```
+
+    **Warning**: This operation permanently removes the file and cannot be reversed.
+    """
     settings = request.app.state.settings
 
     raise_if_file_not_found(settings.s3_bucket_name, file_path)
