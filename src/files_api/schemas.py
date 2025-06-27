@@ -9,6 +9,7 @@ from typing import (
 
 from pydantic import (
     BaseModel,
+    ConfigDict,
     Field,
     model_validator,
 )
@@ -20,30 +21,55 @@ DEFAULT_GET_FILES_DIRECTORY = ""
 
 
 class FileMetadata(BaseModel):
-    """Represents a file in S3."""
+    """Represents a file in the filesystem."""
 
-    file_path: str
-    last_modified: datetime
-    size_bytes: int
+    file_path: str = Field(
+        description="The path of the file.",
+        json_schema_extra={"example": "path/to/pyproject.toml"},
+    )
+    last_modified: datetime = Field(
+        description="The last modified date of the file.",
+        json_schema_extra={"example": "2025-01-25T00:00:00Z"},
+    )
+    size_bytes: int = Field(
+        description="The size of the file in bytes.",
+        json_schema_extra={"example": 512},
+    )
 
 
 class PutFileResponse(BaseModel):
-    """Schema for the result of a file creation."""
+    """Response for `PUT /files/:file_path`."""
 
-    file_path: str
-    message: str
+    file_path: str = Field(
+        description="The path of the created file.",
+        json_schema_extra={"example": "uploads/document.pdf"},
+    )
+    message: str = Field(
+        description="Success message for the file creation.",
+        json_schema_extra={"example": "File uploaded successfully"},
+    )
 
 
 class GetFilesQueryParams(BaseModel):
-    """Schema for the input of a get files query."""
+    """Parameters for `GET /files`."""
 
     page_size: Optional[int] = Field(
         DEFAULT_GET_FILES_PAGE_SIZE,
         ge=DEFAULT_GET_FILES_MIN_PAGE_SIZE,
         le=DEFAULT_GET_FILES_MAX_PAGE_SIZE,
+        description="The number of files to return per page.",
+        json_schema_extra={"example": 20},
     )
-    directory: Optional[str] = DEFAULT_GET_FILES_DIRECTORY
-    page_token: Optional[str] = None
+    directory: Optional[str] = Field(
+        DEFAULT_GET_FILES_DIRECTORY,
+        description="The directory to filter files by.",
+        json_schema_extra={"example": "uploads/images"},
+    )
+    page_token: Optional[str] = Field(
+        None,
+        description="Token for retrieving the next page of results.",
+        json_schema_extra={"example": "abc123xyz"},
+    )
 
     @model_validator(mode="after")
     def check_page_token_only_argument_if_set(self) -> Self:
@@ -62,7 +88,27 @@ class GetFilesQueryParams(BaseModel):
 
 
 class GetFilesResponse(BaseModel):
-    """Schema for the result of a get files query."""
+    """Response for `GET /files`."""
 
     files: List[FileMetadata]
     next_page_token: Optional[str]
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "files": [
+                    {
+                        "file_path": "path/to/pyproject.toml",
+                        "last_modified": "2025-01-25T00:00:00Z",
+                        "size_bytes": 512,
+                    },
+                    {
+                        "file_path": "path/to/Makefile",
+                        "last_modified": "2025-01-25T01:00:00Z",
+                        "size_bytes": 201,
+                    },
+                ],
+                "next_page_token": "abc123",
+            }
+        }
+    )

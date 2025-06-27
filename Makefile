@@ -10,11 +10,17 @@ build:
 clean:
 	bash run.sh clean
 
+generate-client-library:
+	bash run.sh generate-client-library
+
 help:
 	bash run.sh help
 
 install:
 	bash run.sh install
+
+install-generated-sdk:
+	bash run.sh install-generated-sdk
 
 lint:
 	bash run.sh lint
