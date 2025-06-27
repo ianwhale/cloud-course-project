@@ -97,6 +97,10 @@ ignore = [
     "D209",
     # D213: Multi-line docstring summary should start at the second line
     "D213",
+    # D400: First line should end with a period
+    "D400",
+    # D415: First line should end with a period, question mark, or exclamation point
+    "D415",
 ]
 exclude = [".venv"]
 max-line-length = 88

@@ -54,18 +54,18 @@ async def upload_file(
 ) -> PutFileResponse:
     """
     ## Upload a File
-    
-    Upload a file to the specified path. If a file already exists at the given path, 
+
+    Upload a file to the specified path. If a file already exists at the given path,
     it will be replaced with the new content.
-    
+
     ### Parameters
     - **file_path**: The destination path where the file should be stored
     - **file_content**: The file content to upload (multipart/form-data)
-    
+
     ### Response
     - **200 OK**: File was successfully updated (file already existed)
     - **201 Created**: File was successfully uploaded (new file created)
-    
+
     ### Example
     ```bash
     curl -X PUT "https://api.example.com/v1/files/documents/report.pdf" \
@@ -230,27 +230,27 @@ async def get_file(
 ) -> StreamingResponse:
     """
     ## Download a File
-    
-    Download the content of a file stored at the specified path. The file is returned 
+
+    Download the content of a file stored at the specified path. The file is returned
     as a streaming response with the appropriate content type.
-    
+
     ### Parameters
     - **file_path**: The path to the file to download
-    
+
     ### Response
     - **200 OK**: File content streamed successfully
     - **404 Not Found**: File does not exist
-    
+
     ### Response Headers
     - **Content-Type**: The MIME type of the file
     - **Content-Length**: The size of the file in bytes
-    
+
     ### Example
     ```bash
     # Download a file
     curl "https://api.example.com/v1/files/documents/report.pdf" \
          -o "downloaded-report.pdf"
-    
+
     # Download and view text file content
     curl "https://api.example.com/v1/files/logs/app.log"
     ```

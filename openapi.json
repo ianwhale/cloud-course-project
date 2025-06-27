@@ -1,8 +1,10 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "FastAPI",
-    "version": "0.1.0"
+    "title": "Files API",
+    "summary": "Store and retrieve files.",
+    "description": "![Maintained by](https://img.shields.io/badge/Maintained%20by-MLOps%20Club-05998B?style=for-the-badge)\n\n| Helpful Links | Notes |\n| --- | --- |\n| [Course Homepage](https://mlops-club.org) | |\n| [Course Student Portal](https://courses.mlops-club.org) | |\n| [Course Materials Repo](https://github.com/mlops-club/python-on-aws-course.git) | `mlops-club/python-on-aws-course` |\n| [Course Reference Project Repo](https://github.com/mlops-club/cloud-course-project.git) | `mlops-club/cloud-course-project` |\n| [FastAPI Documentation](https://fastapi.tiangolo.com/) | |\n| [Learn to make \"badges\"](https://shields.io/) | Example: <img alt=\"Awesome Badge\" src=\"https://img.shields.io/badge/Awesome-\ud83d\ude0e-blueviolet?style=for-the-badge\"> |\n",
+    "version": "v1"
   },
   "paths": {
     "/v1/files/{file_path}": {
@@ -11,7 +13,7 @@
           "Files"
         ],
         "summary": "Upload File",
-        "description": "Upload a file.",
+        "description": "## Upload a File\n\nUpload a file to the specified path. If a file already exists at the given path,\nit will be replaced with the new content.\n\n### Parameters\n- **file_path**: The destination path where the file should be stored\n- **file_content**: The file content to upload (multipart/form-data)\n\n### Response\n- **200 OK**: File was successfully updated (file already existed)\n- **201 Created**: File was successfully uploaded (new file created)\n\n### Example\n```bash\ncurl -X PUT \"https://api.example.com/v1/files/documents/report.pdf\"          -F \"file=@local-file.pdf\"\n```",
         "operationId": "Files-upload_file",
         "parameters": [
           {
@@ -78,7 +80,7 @@
           "Files"
         ],
         "summary": "Get File Metadata",
-        "description": "Retrieve file metadata.\n\nNote: by convention, HEAD requests MUST NOT return a body in the response.",
+        "description": "## Get File Metadata\n\nRetrieve metadata information about a file without downloading the file content.\nThis is useful for checking if a file exists and getting its properties.\n\n### Parameters\n- **file_path**: The path to the file\n\n### Response Headers\n- **Content-Type**: The MIME type of the file\n- **Content-Length**: The size of the file in bytes\n- **Last-Modified**: The last modification date of the file\n\n### Status Codes\n- **200 OK**: File exists and metadata retrieved successfully\n- **404 Not Found**: File does not exist\n\n### Example\n```bash\ncurl -I \"https://api.example.com/v1/files/documents/report.pdf\"\n```\n\nNote: This endpoint returns only headers, no response body.",
         "operationId": "Files-get_file_metadata",
         "parameters": [
           {
@@ -123,7 +125,7 @@
           "Files"
         ],
         "summary": "Get File",
-        "description": "Retrieve a file.",
+        "description": "## Download a File\n\nDownload the content of a file stored at the specified path. The file is returned\nas a streaming response with the appropriate content type.\n\n### Parameters\n- **file_path**: The path to the file to download\n\n### Response\n- **200 OK**: File content streamed successfully\n- **404 Not Found**: File does not exist\n\n### Response Headers\n- **Content-Type**: The MIME type of the file\n- **Content-Length**: The size of the file in bytes\n\n### Example\n```bash\n# Download a file\ncurl \"https://api.example.com/v1/files/documents/report.pdf\"          -o \"downloaded-report.pdf\"\n\n# Download and view text file content\ncurl \"https://api.example.com/v1/files/logs/app.log\"\n```",
         "operationId": "Files-get_file",
         "parameters": [
           {
@@ -168,7 +170,7 @@
           "Files"
         ],
         "summary": "Delete File",
-        "description": "Delete a file.\n\nNOTE: DELETE requests MUST NOT return a body in the response.",
+        "description": "## Delete a File\n\nPermanently delete a file from the specified path. This operation cannot be undone.\n\n### Parameters\n- **file_path**: The path to the file to delete\n\n### Response\n- **204 No Content**: File deleted successfully\n- **404 Not Found**: File does not exist\n\n### Example\n```bash\ncurl -X DELETE \"https://api.example.com/v1/files/documents/old-report.pdf\"\n```\n\n**Warning**: This operation permanently removes the file and cannot be reversed.",
         "operationId": "Files-delete_file",
         "parameters": [
           {
@@ -215,7 +217,7 @@
           "Files"
         ],
         "summary": "List Files",
-        "description": "List files with pagination.",
+        "description": "## List Files\n\nRetrieve a paginated list of files stored in the system. Results can be filtered\nby directory and support pagination for efficient browsing of large file collections.\n\n### Query Parameters\n- **directory** (optional): Filter files by directory prefix\n- **page_size** (optional): Number of files to return per page (default: 100)\n- **page_token** (optional): Token for retrieving the next page of results\n\n### Response\nReturns a list of files with metadata including:\n- File path and name\n- Last modified timestamp\n- File size in bytes\n- Next page token (if more results available)\n\n### Example\n```bash\n# List all files\ncurl \"https://api.example.com/v1/files\"\n\n# List files in a specific directory\ncurl \"https://api.example.com/v1/files?directory=documents/\"\n\n# Get next page of results\ncurl \"https://api.example.com/v1/files?page_token=abc123\"\n```",
         "operationId": "Files-list_files",
         "parameters": [
           {
@@ -316,16 +318,22 @@
         "properties": {
           "file_path": {
             "type": "string",
-            "title": "File Path"
+            "title": "File Path",
+            "description": "The path of the file.",
+            "example": "path/to/pyproject.toml"
           },
           "last_modified": {
             "type": "string",
             "format": "date-time",
-            "title": "Last Modified"
+            "title": "Last Modified",
+            "description": "The last modified date of the file.",
+            "example": "2025-01-25T00:00:00Z"
           },
           "size_bytes": {
             "type": "integer",
-            "title": "Size Bytes"
+            "title": "Size Bytes",
+            "description": "The size of the file in bytes.",
+            "example": 512
           }
         },
         "type": "object",
@@ -335,7 +343,7 @@
           "size_bytes"
         ],
         "title": "FileMetadata",
-        "description": "Represents a file in S3."
+        "description": "Represents a file in the filesystem."
       },
       "GetFilesResponse": {
         "properties": {
@@ -364,7 +372,22 @@
           "next_page_token"
         ],
         "title": "GetFilesResponse",
-        "description": "Schema for the result of a get files query."
+        "description": "Response for `GET /files`.",
+        "example": {
+          "files": [
+            {
+              "file_path": "path/to/pyproject.toml",
+              "last_modified": "2025-01-25T00:00:00Z",
+              "size_bytes": 512
+            },
+            {
+              "file_path": "path/to/Makefile",
+              "last_modified": "2025-01-25T01:00:00Z",
+              "size_bytes": 201
+            }
+          ],
+          "next_page_token": "abc123"
+        }
       },
       "HTTPValidationError": {
         "properties": {
@@ -383,11 +406,15 @@
         "properties": {
           "file_path": {
             "type": "string",
-            "title": "File Path"
+            "title": "File Path",
+            "description": "The path of the created file.",
+            "example": "uploads/document.pdf"
           },
           "message": {
             "type": "string",
-            "title": "Message"
+            "title": "Message",
+            "description": "Success message for the file creation.",
+            "example": "File uploaded successfully"
           }
         },
         "type": "object",
@@ -396,7 +423,7 @@
           "message"
         ],
         "title": "PutFileResponse",
-        "description": "Schema for the result of a file creation."
+        "description": "Response for `PUT /files/:file_path`."
       },
       "ValidationError": {
         "properties": {
