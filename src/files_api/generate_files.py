@@ -1,3 +1,5 @@
+"""OpenAI calls for generating files."""
+
 from typing import (
     Literal,
     Tuple,

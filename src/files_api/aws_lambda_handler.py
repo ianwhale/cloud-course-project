@@ -1,3 +1,5 @@
+"""Handler for AWS Lambda."""
+
 from mangum import Mangum
 
 from files_api.main import create_app

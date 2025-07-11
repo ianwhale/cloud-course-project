@@ -6,6 +6,8 @@ No matter the prompt, it always returns the same text or image.
 Access the server at `http://localhost:1080`.
 """
 
+# pylint: disable=R0801
+
 import os
 from io import BytesIO
 from pathlib import Path
@@ -46,7 +48,11 @@ mock_responses = [
                         "finish_reason": "stop",
                     }
                 ],
-                "usage": {"prompt_tokens": 9, "completion_tokens": 14, "total_tokens": 23},
+                "usage": {
+                    "prompt_tokens": 9,
+                    "completion_tokens": 14,
+                    "total_tokens": 23,
+                },
             },
         },
     },
@@ -65,7 +71,11 @@ mock_responses = [
                         "url": "https://repository-images.githubusercontent.com/516708998/571919ae-d303-406d-8098-af4b2d2fb6be"
                     }
                 ],
-                "usage": {"prompt_tokens": 15, "completion_tokens": 1, "total_tokens": 16},
+                "usage": {
+                    "prompt_tokens": 15,
+                    "completion_tokens": 1,
+                    "total_tokens": 16,
+                },
             },
         },
     },
@@ -96,7 +106,11 @@ async def images_generations():
 async def create_speech():
     """Return the local speech.mp3 file as a streaming response."""
     mp3_content = BytesIO(SAMPLE_TTS_AUDIO_FPATH.read_bytes())
-    return StreamingResponse(content=mp3_content, media_type="audio/mpeg", headers={"Transfer-Encoding": "chunked"})
+    return StreamingResponse(
+        content=mp3_content,
+        media_type="audio/mpeg",
+        headers={"Transfer-Encoding": "chunked"},
+    )
 
 
 if __name__ == "__main__":

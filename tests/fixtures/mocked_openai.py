@@ -1,3 +1,5 @@
+"""Mock OpenAI calls."""
+
 import os
 import subprocess
 import sys
@@ -58,7 +60,9 @@ def _stream_output(pipe, name):
             print(f"[{name}] {line.strip()}")
 
 
-def start_mock_server(port: int, max_retries: int = 3, retry_delay_seconds: int = 1) -> subprocess.Popen:
+def start_mock_server(
+    port: int, max_retries: int = 3, retry_delay_seconds: int = 1
+) -> subprocess.Popen:
     """Start a mock server and verify it's running by hitting the `/` endpoint."""
     # pylint: disable=consider-using-with
     process = subprocess.Popen(
@@ -76,8 +80,12 @@ def start_mock_server(port: int, max_retries: int = 3, retry_delay_seconds: int 
     )
 
     # Start threads to asynchronously print stdout and stderr
-    stdout_thread = threading.Thread(target=_stream_output, args=(process.stdout, "stdout"))
-    stderr_thread = threading.Thread(target=_stream_output, args=(process.stderr, "stderr"))
+    stdout_thread = threading.Thread(
+        target=_stream_output, args=(process.stdout, "stdout")
+    )
+    stderr_thread = threading.Thread(
+        target=_stream_output, args=(process.stderr, "stderr")
+    )
     stdout_thread.start()
     stderr_thread.start()
 
@@ -92,4 +100,6 @@ def start_mock_server(port: int, max_retries: int = 3, retry_delay_seconds: int 
     process.terminate()
     stdout_thread.join()
     stderr_thread.join()
-    raise RuntimeError(f"Mock server at port {port} failed to start after {max_retries} attempts.")
+    raise RuntimeError(
+        f"Mock server at port {port} failed to start after {max_retries} attempts."
+    )
