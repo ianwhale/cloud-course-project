@@ -10,7 +10,10 @@ from files_api.errors import (
     handle_broad_exceptions,
     handle_pydantic_validation_errors,
 )
-from files_api.routes import ROUTER
+from files_api.routes import (
+    FILES_ROUTER,
+    GENERATED_FILES_ROUTER,
+)
 from files_api.settings import Settings
 
 
@@ -40,11 +43,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         """
         ),
         docs_url="/",  # its easier to find the docs when they live on the base url
+        root_path="/prod",
         generate_unique_id_function=custom_generate_unique_id,
     )
     app.state.settings = settings
 
-    app.include_router(ROUTER)
+    app.include_router(FILES_ROUTER)
+    app.include_router(GENERATED_FILES_ROUTER)
     app.add_exception_handler(
         exc_class_or_status_code=pydantic.ValidationError,
         handler=handle_pydantic_validation_errors,

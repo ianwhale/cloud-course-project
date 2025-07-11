@@ -10,6 +10,9 @@ build:
 clean:
 	bash run.sh clean
 
+deploy-lambda: clean
+	bash run.sh deploy-lambda
+
 generate-client-library:
 	bash run.sh generate-client-library
 

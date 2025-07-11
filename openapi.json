@@ -106,7 +106,34 @@
               "application/json": {
                 "schema": {}
               }
+            },
+            "headers": {
+              "Content-Type": {
+                "description": "The [MIME type](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types) of the file.",
+                "example": "text/plain",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Length": {
+                "description": "The size of the file in bytes.",
+                "example": 512,
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "Last-Modified": {
+                "description": "The last modified date of the file.",
+                "example": "Thu, 01 Jan 2022 00:00:00 GMT",
+                "schema": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
             }
+          },
+          "404": {
+            "description": "File not found for the given `file_path`."
           },
           "422": {
             "description": "Validation Error",
@@ -146,12 +173,21 @@
         ],
         "responses": {
           "200": {
-            "description": "Successful Response",
+            "description": "The file content.",
             "content": {
               "application/json": {
                 "schema": {}
+              },
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
               }
             }
+          },
+          "404": {
+            "description": "File not found for the given `file_path`."
           },
           "422": {
             "description": "Validation Error",
@@ -197,6 +233,12 @@
                 "schema": {}
               }
             }
+          },
+          "404": {
+            "description": "File not found for the given `file_path`."
+          },
+          "204": {
+            "description": "File deleted successfully."
           },
           "422": {
             "description": "Validation Error",
@@ -296,6 +338,86 @@
           }
         }
       }
+    },
+    "/v1/files/generated/{file_path}": {
+      "post": {
+        "tags": [
+          "Generated Files"
+        ],
+        "summary": "AI Generated Files",
+        "description": "Generate a File using AI.\n\nSupported file types:\n- **text**: `.txt`\n- **image**: `.png`, `.jpg`, `.jpeg`\n- **text-to-speech**: `.mp3`, `.opus`, `.aac`, `.flac`, `.wav`, `.pcm`\n\nNote: the generated file type is derived from the file_path extension. So the file_path must have\nan extension matching one of the supported file types in the list above.",
+        "operationId": "Generated Files-generate_file_using_openai",
+        "parameters": [
+          {
+            "name": "file_path",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "File Path"
+            }
+          },
+          {
+            "name": "prompt",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Prompt"
+            }
+          },
+          {
+            "name": "file_type",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/GeneratedFileType"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PutGeneratedFileResponse"
+                },
+                "examples": {
+                  "text": {
+                    "value": {
+                      "file_path": "path/to/file.txt",
+                      "message": "New text file generated and uploaded at path: path/to/file.txt"
+                    }
+                  },
+                  "image": {
+                    "value": {
+                      "file_path": "path/to/image.png",
+                      "message": "New image file generated and uploaded at path: path/to/image.png"
+                    }
+                  },
+                  "text-to-speech": {
+                    "value": {
+                      "file_path": "path/to/speech.mp3",
+                      "message": "New Text-to-Speech file generated and uploaded at path: path/to/speech.mp3"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -344,6 +466,16 @@
         ],
         "title": "FileMetadata",
         "description": "Represents a file in the filesystem."
+      },
+      "GeneratedFileType": {
+        "type": "string",
+        "enum": [
+          "text",
+          "image",
+          "text-to-speech"
+        ],
+        "title": "GeneratedFileType",
+        "description": "The type of file generated by OpenAI."
       },
       "GetFilesResponse": {
         "properties": {
@@ -424,6 +556,49 @@
         ],
         "title": "PutFileResponse",
         "description": "Response for `PUT /files/:file_path`."
+      },
+      "PutGeneratedFileResponse": {
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "title": "File Path",
+            "description": "The path to the file.",
+            "example": "path/to/file.txt"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "The message indicating the status of the operation.",
+            "example": "New file generated and uploaded at path: path/to/file.txt"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file_path",
+          "message"
+        ],
+        "title": "PutGeneratedFileResponse",
+        "description": "Response model for `POST /v1/files/generated/:file_path`.",
+        "examples": [
+          {
+            "value": {
+              "file_path": "path/to/file.txt",
+              "message": "New text file generated and uploaded at path: path/to/file.txt"
+            }
+          },
+          {
+            "value": {
+              "file_path": "path/to/image.png",
+              "message": "New image file generated and uploaded at path: path/to/image.png"
+            }
+          },
+          {
+            "value": {
+              "file_path": "path/to/speech.mp3",
+              "message": "New Text-to-Speech file generated and uploaded at path: path/to/speech.mp3"
+            }
+          }
+        ]
       },
       "ValidationError": {
         "properties": {
