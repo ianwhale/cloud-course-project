@@ -9,7 +9,7 @@ from tests.consts import TEST_BUCKET_NAME
 
 
 @pytest.fixture
-def client(mocked_aws) -> TestClient:  # pylint: disable=unused-argument
+def client(mocked_aws, mocked_openai) -> TestClient:  # pylint: disable=unused-argument
     settings = Settings(s3_bucket_name=TEST_BUCKET_NAME)
     app = create_app(settings)
     with TestClient(app) as client:
